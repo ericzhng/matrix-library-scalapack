@@ -14,6 +14,8 @@
 #
 ############################################################################
 
+PREFIX ?= /home/ericzhng/scalapack
+
 include SLmake.inc
 
 PRECISIONS = single double complex complex16
@@ -47,7 +49,13 @@ PRECISIONS = single double complex complex16
 #
 ############################################################################
 
-all: lib exe example
+#all: lib exe example
+all: lib shareso
+
+shareso: $(SCALAPACKLIB_SHARED)
+
+$(SCALAPACKLIB_SHARED): lib
+	$(CCLOADER) -shared -o $@ -Wl,--whole-archive libscalapack.a -Wl,--no-whole-archive
 
 lib: blacslib toolslib pblaslib redistlib scalapacklib
 
@@ -107,3 +115,8 @@ cleanlib:
 cleanexample:
 	( cd EXAMPLE; $(MAKE) clean )
 
+install: $(SCALAPACKLIB_SHARED) $(SCALAPACKLIB)
+	mkdir -p $(PREFIX)/lib
+#	mkdir -p $(PREFIX)/include
+	cp libscalapack.so $(PREFIX)/lib/libscalapack.so
+	cp libscalapack.a $(PREFIX)/lib/libscalapack.a

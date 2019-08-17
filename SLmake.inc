@@ -56,6 +56,6 @@ SCALAPACKLIB_SHARED  = libscalapack.so
 #  BLAS, LAPACK (and possibly other) libraries needed for linking test programs
 #
 
-BLASLIB       = /home/ericzhng/software/blas/lib/libblas.a
-LAPACKLIB     = /home/ericzhng/software/lapack/lib/liblapack.a
+BLASLIB       = libblas.a
+LAPACKLIB     = liblapack.a
 LIBS          = $(LAPACKLIB) $(BLASLIB)
