@@ -1,0 +1,1031 @@
+.TH PZHEGVX l "13 August 2001" "ScaLAPACK version 1.7" ")"
+.SH NAME
+
+.SH SYNOPSIS
+.TP 20
+SUBROUTINE PZHEGVX(
+IBTYPE, JOBZ, RANGE, UPLO, N, A, IA, JA,
+DESCA, B, IB, JB, DESCB, VL, VU, IL, IU,
+ABSTOL, M, NZ, W, ORFAC, Z, IZ, JZ, DESCZ,
+WORK, LWORK, RWORK, LRWORK, IWORK, LIWORK,
+IFAIL, ICLUSTR, GAP, INFO )
+.TP 20
+.ti +4
+CHARACTER
+JOBZ, RANGE, UPLO
+.TP 20
+.ti +4
+INTEGER
+IA, IB, IBTYPE, IL, INFO, IU, IZ, JA, JB, JZ,
+LIWORK, LRWORK, LWORK, M, N, NZ
+.TP 20
+.ti +4
+DOUBLE
+PRECISION ABSTOL, ORFAC, VL, VU
+.TP 20
+.ti +4
+INTEGER
+DESCA( * ), DESCB( * ), DESCZ( * ),
+ICLUSTR( * ), IFAIL( * ), IWORK( * )
+.TP 20
+.ti +4
+DOUBLE
+PRECISION GAP( * ), RWORK( * ), W( * )
+.TP 20
+.ti +4
+COMPLEX*16
+A( * ), B( * ), WORK( * ), Z( * )
+.TP 20
+.ti +4
+INTEGER
+BLOCK_CYCLIC_2D, DLEN_, DTYPE_, CTXT_, M_, N_,
+MB_, NB_, RSRC_, CSRC_, LLD_
+.TP 20
+.ti +4
+PARAMETER
+( BLOCK_CYCLIC_2D = 1, DLEN_ = 9, DTYPE_ = 1,
+CTXT_ = 2, M_ = 3, N_ = 4, MB_ = 5, NB_ = 6,
+RSRC_ = 7, CSRC_ = 8, LLD_ = 9 )
+.TP 20
+.ti +4
+COMPLEX*16
+ONE
+.TP 20
+.ti +4
+PARAMETER
+( ONE = 1.0D+0 )
+.TP 20
+.ti +4
+DOUBLE
+PRECISION FIVE, ZERO
+.TP 20
+.ti +4
+PARAMETER
+( FIVE = 5.0D+0, ZERO = 0.0D+0 )
+.TP 20
+.ti +4
+INTEGER
+IERRNPD
+.TP 20
+.ti +4
+PARAMETER
+( IERRNPD = 16 )
+.TP 20
+.ti +4
+LOGICAL
+ALLEIG, INDEIG, LQUERY, UPPER, VALEIG, WANTZ
+.TP 20
+.ti +4
+CHARACTER
+TRANS
+.TP 20
+.ti +4
+INTEGER
+ANB, IACOL, IAROW, IBCOL, IBROW, ICOFFA,
+ICOFFB, ICTXT, IROFFA, IROFFB, LIWMIN, LRWMIN,
+LRWOPT, LWMIN, LWOPT, MQ0, MYCOL, MYROW, NB,
+NEIG, NHEGST_LWOPT, NHETRD_LWOPT, NN, NP0,
+NPCOL, NPROW, NPS, NQ0, SQNPC
+.TP 20
+.ti +4
+DOUBLE
+PRECISION EPS, SCALE
+.TP 20
+.ti +4
+INTEGER
+IDUM1( 5 ), IDUM2( 5 )
+.TP 20
+.ti +4
+LOGICAL
+LSAME
+.TP 20
+.ti +4
+INTEGER
+ICEIL, INDXG2P, NUMROC, PJLAENV
+.TP 20
+.ti +4
+DOUBLE
+PRECISION PDLAMCH
+.TP 20
+.ti +4
+EXTERNAL
+LSAME, ICEIL, INDXG2P, NUMROC, PJLAENV, PDLAMCH
+.TP 20
+.ti +4
+EXTERNAL
+BLACS_GRIDINFO, CHK1MAT, DGEBR2D, DGEBS2D,
+DSCAL, PCHK1MAT, PCHK2MAT, PXERBLA, PZHEEVX,
+PZHENGST, PZPOTRF, PZTRMM, PZTRSM
+.TP 20
+.ti +4
+INTRINSIC
+ABS, DBLE, DCMPLX, ICHAR, INT, MAX, MIN, MOD,
+SQRT
+.TP 20
+.ti +4
+IF(
+BLOCK_CYCLIC_2D*CSRC_*CTXT_*DLEN_*DTYPE_*LLD_*MB_*M_*NB_*N_*
+RSRC_.LT.0 )RETURN
+.TP 20
+.ti +4
+ICTXT
+= DESCA( CTXT_ )
+.TP 20
+.ti +4
+CALL
+BLACS_GRIDINFO( ICTXT, NPROW, NPCOL, MYROW, MYCOL )
+.TP 20
+.ti +4
+INFO
+= 0
+.TP 20
+.ti +4
+IF(
+NPROW.EQ.-1 ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 900+CTXT_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CTXT_ ).NE.DESCB( CTXT_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+CTXT_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CTXT_ ).NE.DESCZ( CTXT_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2600+CTXT_ )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+EPS
+= PDLAMCH( DESCA( CTXT_ ), 'Precision' )
+.TP 20
+.ti +4
+WANTZ
+= LSAME( JOBZ, 'V' )
+.TP 20
+.ti +4
+UPPER
+= LSAME( UPLO, 'U' )
+.TP 20
+.ti +4
+ALLEIG
+= LSAME( RANGE, 'A' )
+.TP 20
+.ti +4
+VALEIG
+= LSAME( RANGE, 'V' )
+.TP 20
+.ti +4
+INDEIG
+= LSAME( RANGE, 'I' )
+.TP 20
+.ti +4
+CALL
+CHK1MAT( N, 4, N, 4, IA, JA, DESCA, 9, INFO )
+.TP 20
+.ti +4
+CALL
+CHK1MAT( N, 4, N, 4, IB, JB, DESCB, 13, INFO )
+.TP 20
+.ti +4
+CALL
+CHK1MAT( N, 4, N, 4, IZ, JZ, DESCZ, 26, INFO )
+.TP 20
+.ti +4
+IF(
+INFO.EQ.0 ) THEN
+.TP 20
+.ti +4
+IF(
+MYROW.EQ.0 .AND. MYCOL.EQ.0 ) THEN
+.TP 20
+.ti +4
+RWORK(
+1 ) = ABSTOL
+.TP 20
+.ti +4
+IF(
+VALEIG ) THEN
+.TP 20
+.ti +4
+RWORK(
+2 ) = VL
+.TP 20
+.ti +4
+RWORK(
+3 ) = VU
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+RWORK(
+2 ) = ZERO
+.TP 20
+.ti +4
+RWORK(
+3 ) = ZERO
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+CALL
+DGEBS2D( DESCA( CTXT_ ), 'ALL', ' ', 3, 1, RWORK,
+3 )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+CALL
+DGEBR2D( DESCA( CTXT_ ), 'ALL', ' ', 3, 1, RWORK, 3,
+0, 0 )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IAROW
+= INDXG2P( IA, DESCA( MB_ ), MYROW, DESCA( RSRC_ ),
+NPROW )
+.TP 20
+.ti +4
+IBROW
+= INDXG2P( IB, DESCB( MB_ ), MYROW, DESCB( RSRC_ ),
+NPROW )
+.TP 20
+.ti +4
+IACOL
+= INDXG2P( JA, DESCA( NB_ ), MYCOL, DESCA( CSRC_ ),
+NPCOL )
+.TP 20
+.ti +4
+IBCOL
+= INDXG2P( JB, DESCB( NB_ ), MYCOL, DESCB( CSRC_ ),
+NPCOL )
+.TP 20
+.ti +4
+IROFFA
+= MOD( IA-1, DESCA( MB_ ) )
+.TP 20
+.ti +4
+ICOFFA
+= MOD( JA-1, DESCA( NB_ ) )
+.TP 20
+.ti +4
+IROFFB
+= MOD( IB-1, DESCB( MB_ ) )
+.TP 20
+.ti +4
+ICOFFB
+= MOD( JB-1, DESCB( NB_ ) )
+.TP 20
+.ti +4
+LQUERY
+= .FALSE.
+.TP 20
+.ti +4
+IF(
+LWORK.EQ.-1 .OR. LIWORK.EQ.-1 .OR. LRWORK.EQ.-1 )
+LQUERY = .TRUE.
+.TP 20
+.ti +4
+LIWMIN
+= 6*MAX( N, ( NPROW*NPCOL )+1, 4 )
+.TP 20
+.ti +4
+NB
+= DESCA( MB_ )
+.TP 20
+.ti +4
+NN
+= MAX( N, NB, 2 )
+.TP 20
+.ti +4
+NP0
+= NUMROC( NN, NB, 0, 0, NPROW )
+.TP 20
+.ti +4
+IF(
+( .NOT.WANTZ ) .OR. ( VALEIG .AND. ( .NOT.LQUERY ) ) )
+THEN
+.TP 20
+.ti +4
+LWMIN
+= N + MAX( NB*( NP0+1 ), 3 )
+.TP 20
+.ti +4
+LWOPT
+= LWMIN
+.TP 20
+.ti +4
+LRWMIN
+= 5*NN + 4*N
+.TP 20
+.ti +4
+IF(
+WANTZ ) THEN
+.TP 20
+.ti +4
+MQ0
+= NUMROC( MAX( N, NB, 2 ), NB, 0, 0, NPCOL )
+.TP 20
+.ti +4
+LRWOPT
+= 4*N + MAX( 5*NN, NP0*MQ0 )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+LRWOPT
+= LRWMIN
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+NEIG
+= 0
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+IF(
+ALLEIG .OR. VALEIG ) THEN
+.TP 20
+.ti +4
+NEIG
+= N
+.TP 20
+.ti +4
+ELSE
+IF( INDEIG ) THEN
+.TP 20
+.ti +4
+NEIG
+= IU - IL + 1
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+MQ0
+= NUMROC( MAX( NEIG, NB, 2 ), NB, 0, 0, NPCOL )
+.TP 20
+.ti +4
+LWMIN
+= N + ( NP0+MQ0+NB )*NB
+.TP 20
+.ti +4
+LWOPT
+= LWMIN
+.TP 20
+.ti +4
+LRWMIN
+= 4*N + MAX( 5*NN, NP0*MQ0 ) +
+ICEIL( NEIG, NPROW*NPCOL )*NN
+.TP 20
+.ti +4
+LRWOPT
+= LRWMIN
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+ANB
+= PJLAENV( ICTXT, 3, 'PZHETTRD', 'L', 0, 0, 0, 0 )
+.TP 20
+.ti +4
+SQNPC
+= INT( SQRT( DBLE( NPROW*NPCOL ) ) )
+.TP 20
+.ti +4
+NPS
+= MAX( NUMROC( N, 1, 0, 0, SQNPC ), 2*ANB )
+.TP 20
+.ti +4
+NHETRD_LWOPT
+= 2*( ANB+1 )*( 4*NPS+2 ) + ( NPS+4 )*NPS
+.TP 20
+.ti +4
+NB
+= DESCA( MB_ )
+.TP 20
+.ti +4
+NP0
+= NUMROC( N, NB, 0, 0, NPROW )
+.TP 20
+.ti +4
+NQ0
+= NUMROC( N, NB, 0, 0, NPCOL )
+.TP 20
+.ti +4
+NHEGST_LWOPT
+= 2*NP0*NB + NQ0*NB + NB*NB
+.TP 20
+.ti +4
+LWOPT
+= MAX( LWOPT, N+NHETRD_LWOPT, NHEGST_LWOPT )
+.TP 20
+.ti +4
+IF(
+IBTYPE.LT.1 .OR. IBTYPE.GT.3 ) THEN
+.TP 20
+.ti +4
+INFO
+= -1
+.TP 20
+.ti +4
+ELSE
+IF( .NOT.( WANTZ .OR. LSAME( JOBZ, 'N' ) ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -2
+.TP 20
+.ti +4
+ELSE
+IF( .NOT.( ALLEIG .OR. VALEIG .OR. INDEIG ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -3
+.TP 20
+.ti +4
+ELSE
+IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -4
+.TP 20
+.ti +4
+ELSE
+IF( N.LT.0 ) THEN
+.TP 20
+.ti +4
+INFO
+= -5
+.TP 20
+.ti +4
+ELSE
+IF( IROFFA.NE.0 ) THEN
+.TP 20
+.ti +4
+INFO
+= -7
+.TP 20
+.ti +4
+ELSE
+IF( ICOFFA.NE.0 ) THEN
+.TP 20
+.ti +4
+INFO
+= -8
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( MB_ ).NE.DESCA( NB_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 900+NB_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( M_ ).NE.DESCB( M_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+M_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( N_ ).NE.DESCB( N_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+N_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( MB_ ).NE.DESCB( MB_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+MB_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( NB_ ).NE.DESCB( NB_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+NB_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( RSRC_ ).NE.DESCB( RSRC_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+RSRC_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CSRC_ ).NE.DESCB( CSRC_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+CSRC_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CTXT_ ).NE.DESCB( CTXT_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 1300+CTXT_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( M_ ).NE.DESCZ( M_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+M_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( N_ ).NE.DESCZ( N_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+N_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( MB_ ).NE.DESCZ( MB_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+MB_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( NB_ ).NE.DESCZ( NB_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+NB_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( RSRC_ ).NE.DESCZ( RSRC_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+RSRC_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CSRC_ ).NE.DESCZ( CSRC_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+CSRC_ )
+.TP 20
+.ti +4
+ELSE
+IF( DESCA( CTXT_ ).NE.DESCZ( CTXT_ ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -( 2200+CTXT_ )
+.TP 20
+.ti +4
+ELSE
+IF( IROFFB.NE.0 .OR. IBROW.NE.IAROW ) THEN
+.TP 20
+.ti +4
+INFO
+= -11
+.TP 20
+.ti +4
+ELSE
+IF( ICOFFB.NE.0 .OR. IBCOL.NE.IACOL ) THEN
+.TP 20
+.ti +4
+INFO
+= -12
+.TP 20
+.ti +4
+ELSE
+IF( VALEIG .AND. N.GT.0 .AND. VU.LE.VL ) THEN
+.TP 20
+.ti +4
+INFO
+= -15
+.TP 20
+.ti +4
+ELSE
+IF( INDEIG .AND. ( IL.LT.1 .OR. IL.GT.MAX( 1, N ) ) )
+THEN
+.TP 20
+.ti +4
+INFO
+= -16
+.TP 20
+.ti +4
+ELSE
+IF( INDEIG .AND. ( IU.LT.MIN( N, IL ) .OR. IU.GT.N ) )
+THEN
+.TP 20
+.ti +4
+INFO
+= -17
+.TP 20
+.ti +4
+ELSE
+IF( VALEIG .AND. ( ABS( RWORK( 2 )-VL ).GT.FIVE*EPS*
+ABS( VL ) ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -14
+.TP 20
+.ti +4
+ELSE
+IF( VALEIG .AND. ( ABS( RWORK( 3 )-VU ).GT.FIVE*EPS*
+ABS( VU ) ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -15
+.TP 20
+.ti +4
+ELSE
+IF( ABS( RWORK( 1 )-ABSTOL ).GT.FIVE*EPS*
+ABS( ABSTOL ) ) THEN
+.TP 20
+.ti +4
+INFO
+= -18
+.TP 20
+.ti +4
+ELSE
+IF( LWORK.LT.LWMIN .AND. .NOT.LQUERY ) THEN
+.TP 20
+.ti +4
+INFO
+= -28
+.TP 20
+.ti +4
+ELSE
+IF( LRWORK.LT.LRWMIN .AND. .NOT.LQUERY ) THEN
+.TP 20
+.ti +4
+INFO
+= -30
+.TP 20
+.ti +4
+ELSE
+IF( LIWORK.LT.LIWMIN .AND. .NOT.LQUERY ) THEN
+.TP 20
+.ti +4
+INFO
+= -32
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IDUM1(
+1 ) = IBTYPE
+.TP 20
+.ti +4
+IDUM2(
+1 ) = 1
+.TP 20
+.ti +4
+IF(
+WANTZ ) THEN
+.TP 20
+.ti +4
+IDUM1(
+2 ) = ICHAR( 'V' )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+IDUM1(
+2 ) = ICHAR( 'N' )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IDUM2(
+2 ) = 2
+.TP 20
+.ti +4
+IF(
+UPPER ) THEN
+.TP 20
+.ti +4
+IDUM1(
+3 ) = ICHAR( 'U' )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+IDUM1(
+3 ) = ICHAR( 'L' )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IDUM2(
+3 ) = 3
+.TP 20
+.ti +4
+IF(
+ALLEIG ) THEN
+.TP 20
+.ti +4
+IDUM1(
+4 ) = ICHAR( 'A' )
+.TP 20
+.ti +4
+ELSE
+IF( INDEIG ) THEN
+.TP 20
+.ti +4
+IDUM1(
+4 ) = ICHAR( 'I' )
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+IDUM1(
+4 ) = ICHAR( 'V' )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IDUM2(
+4 ) = 4
+.TP 20
+.ti +4
+IF(
+LQUERY ) THEN
+.TP 20
+.ti +4
+IDUM1(
+5 ) = -1
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+IDUM1(
+5 ) = 1
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IDUM2(
+5 ) = 5
+.TP 20
+.ti +4
+CALL
+PCHK2MAT( N, 4, N, 4, IA, JA, DESCA, 9, N, 4, N, 4, IB,
+JB, DESCB, 13, 5, IDUM1, IDUM2, INFO )
+.TP 20
+.ti +4
+CALL
+PCHK1MAT( N, 4, N, 4, IZ, JZ, DESCZ, 26, 0, IDUM1, IDUM2,
+INFO )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IWORK(
+1 ) = LIWMIN
+.TP 20
+.ti +4
+WORK(
+1 ) = DCMPLX( DBLE( LWOPT ) )
+.TP 20
+.ti +4
+RWORK(
+1 ) = DBLE( LRWOPT )
+.TP 20
+.ti +4
+IF(
+INFO.NE.0 ) THEN
+.TP 20
+.ti +4
+CALL
+PXERBLA( ICTXT, 'PZHEGVX ', -INFO )
+.TP 20
+.ti +4
+RETURN
+.TP 20
+.ti +4
+ELSE
+IF( LQUERY ) THEN
+.TP 20
+.ti +4
+RETURN
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+CALL
+PZPOTRF( UPLO, N, B, IB, JB, DESCB, INFO )
+.TP 20
+.ti +4
+IF(
+INFO.NE.0 ) THEN
+.TP 20
+.ti +4
+IWORK(
+1 ) = LIWMIN
+.TP 20
+.ti +4
+WORK(
+1 ) = DCMPLX( DBLE( LWOPT ) )
+.TP 20
+.ti +4
+RWORK(
+1 ) = DBLE( LRWOPT )
+.TP 20
+.ti +4
+IFAIL(
+1 ) = INFO
+.TP 20
+.ti +4
+INFO
+= IERRNPD
+.TP 20
+.ti +4
+RETURN
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+CALL
+PZHENGST( IBTYPE, UPLO, N, A, IA, JA, DESCA, B, IB, JB,
+DESCB, SCALE, WORK, LWORK, INFO )
+.TP 20
+.ti +4
+CALL
+PZHEEVX( JOBZ, RANGE, UPLO, N, A, IA, JA, DESCA, VL, VU, IL,
+IU, ABSTOL, M, NZ, W, ORFAC, Z, IZ, JZ, DESCZ, WORK,
+LWORK, RWORK, LRWORK, IWORK, LIWORK, IFAIL, ICLUSTR,
+GAP, INFO )
+.TP 20
+.ti +4
+IF(
+WANTZ ) THEN
+.TP 20
+.ti +4
+NEIG
+= M
+.TP 20
+.ti +4
+IF(
+IBTYPE.EQ.1 .OR. IBTYPE.EQ.2 ) THEN
+.TP 20
+.ti +4
+IF(
+UPPER ) THEN
+.TP 20
+.ti +4
+TRANS
+= 'N'
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+TRANS
+= 'C'
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+CALL
+PZTRSM( 'Left', UPLO, TRANS, 'Non-unit', N, NEIG, ONE,
+B, IB, JB, DESCB, Z, IZ, JZ, DESCZ )
+.TP 20
+.ti +4
+ELSE
+IF( IBTYPE.EQ.3 ) THEN
+.TP 20
+.ti +4
+IF(
+UPPER ) THEN
+.TP 20
+.ti +4
+TRANS
+= 'C'
+.TP 20
+.ti +4
+ELSE
+.TP 20
+.ti +4
+TRANS
+= 'N'
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+CALL
+PZTRMM( 'Left', UPLO, TRANS, 'Non-unit', N, NEIG, ONE,
+B, IB, JB, DESCB, Z, IZ, JZ, DESCZ )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IF(
+SCALE.NE.ONE ) THEN
+.TP 20
+.ti +4
+CALL
+DSCAL( N, SCALE, W, 1 )
+.TP 20
+.ti +4
+END
+IF
+.TP 20
+.ti +4
+IWORK(
+1 ) = LIWMIN
+.TP 20
+.ti +4
+WORK(
+1 ) = DCMPLX( DBLE( LWOPT ) )
+.TP 20
+.ti +4
+RWORK(
+1 ) = DBLE( LRWOPT )
+.TP 20
+.ti +4
+RETURN
+.TP 20
+.ti +4
+END
+.SH PURPOSE

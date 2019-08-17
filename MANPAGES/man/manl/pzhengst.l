@@ -1,0 +1,596 @@
+.TH PZHENGST l "13 August 2001" "ScaLAPACK version 1.7" ")"
+.SH NAME
+
+.SH SYNOPSIS
+.TP 21
+SUBROUTINE PZHENGST(
+IBTYPE, UPLO, N, A, IA, JA, DESCA, B, IB, JB,
+DESCB, SCALE, WORK, LWORK, INFO )
+.TP 21
+.ti +4
+CHARACTER
+UPLO
+.TP 21
+.ti +4
+INTEGER
+IA, IB, IBTYPE, INFO, JA, JB, LWORK, N
+.TP 21
+.ti +4
+DOUBLE
+PRECISION SCALE
+.TP 21
+.ti +4
+INTEGER
+DESCA( * ), DESCB( * )
+.TP 21
+.ti +4
+COMPLEX*16
+A( * ), B( * ), WORK( * )
+.TP 21
+.ti +4
+COMPLEX*16
+ONEHALF, ONE, MONE
+.TP 21
+.ti +4
+DOUBLE
+PRECISION RONE
+.TP 21
+.ti +4
+PARAMETER
+( ONEHALF = ( 0.5D0, 0.0D0 ),
+ONE = ( 1.0D0, 0.0D0 ),
+MONE = ( -1.0D0, 0.0D0 ), RONE = 1.0D0 )
+.TP 21
+.ti +4
+INTEGER
+DLEN_, CTXT_, MB_, NB_, RSRC_, CSRC_, LLD_
+.TP 21
+.ti +4
+PARAMETER
+( DLEN_ = 9, CTXT_ = 2, MB_ = 5, NB_ = 6,
+RSRC_ = 7, CSRC_ = 8, LLD_ = 9 )
+.TP 21
+.ti +4
+LOGICAL
+LQUERY, UPPER
+.TP 21
+.ti +4
+INTEGER
+I, IACOL, IAROW, IBCOL, IBROW, ICOFFA, ICOFFB,
+ICTXT, INDAA, INDG, INDR, INDRT, IROFFA,
+IROFFB, J, K, KB, LWMIN, LWOPT, MYCOL, MYROW,
+NB, NP0, NPCOL, NPK, NPROW, NQ0, POSTK
+.TP 21
+.ti +4
+INTEGER
+DESCAA( DLEN_ ), DESCG( DLEN_ ),
+DESCR( DLEN_ ), DESCRT( DLEN_ ), IDUM1( 2 ),
+IDUM2( 2 )
+.TP 21
+.ti +4
+LOGICAL
+LSAME
+.TP 21
+.ti +4
+INTEGER
+INDXG2P, NUMROC
+.TP 21
+.ti +4
+EXTERNAL
+LSAME, INDXG2P, NUMROC
+.TP 21
+.ti +4
+EXTERNAL
+BLACS_GRIDINFO, CHK1MAT, DESCSET, PCHK2MAT,
+PXERBLA, PZGEMM, PZHEGST, PZHEMM, PZHER2K,
+PZLACPY, PZTRSM
+.TP 21
+.ti +4
+INTRINSIC
+DBLE, DCMPLX, DCONJG, ICHAR, MAX, MIN, MOD
+.TP 21
+.ti +4
+ICTXT
+= DESCA( CTXT_ )
+.TP 21
+.ti +4
+CALL
+BLACS_GRIDINFO( ICTXT, NPROW, NPCOL, MYROW, MYCOL )
+.TP 21
+.ti +4
+SCALE
+= 1.0D0
+.TP 21
+.ti +4
+NB
+= DESCA( MB_ )
+.TP 21
+.ti +4
+INFO
+= 0
+.TP 21
+.ti +4
+IF(
+NPROW.EQ.-1 ) THEN
+.TP 21
+.ti +4
+INFO
+= -( 700+CTXT_ )
+.TP 21
+.ti +4
+ELSE
+.TP 21
+.ti +4
+UPPER
+= LSAME( UPLO, 'U' )
+.TP 21
+.ti +4
+CALL
+CHK1MAT( N, 3, N, 3, IA, JA, DESCA, 7, INFO )
+.TP 21
+.ti +4
+CALL
+CHK1MAT( N, 3, N, 3, IB, JB, DESCB, 11, INFO )
+.TP 21
+.ti +4
+IF(
+INFO.EQ.0 ) THEN
+.TP 21
+.ti +4
+IAROW
+= INDXG2P( IA, DESCA( MB_ ), MYROW, DESCA( RSRC_ ),
+NPROW )
+.TP 21
+.ti +4
+IBROW
+= INDXG2P( IB, DESCB( MB_ ), MYROW, DESCB( RSRC_ ),
+NPROW )
+.TP 21
+.ti +4
+IACOL
+= INDXG2P( JA, DESCA( NB_ ), MYCOL, DESCA( CSRC_ ),
+NPCOL )
+.TP 21
+.ti +4
+IBCOL
+= INDXG2P( JB, DESCB( NB_ ), MYCOL, DESCB( CSRC_ ),
+NPCOL )
+.TP 21
+.ti +4
+IROFFA
+= MOD( IA-1, DESCA( MB_ ) )
+.TP 21
+.ti +4
+ICOFFA
+= MOD( JA-1, DESCA( NB_ ) )
+.TP 21
+.ti +4
+IROFFB
+= MOD( IB-1, DESCB( MB_ ) )
+.TP 21
+.ti +4
+ICOFFB
+= MOD( JB-1, DESCB( NB_ ) )
+.TP 21
+.ti +4
+NP0
+= NUMROC( N, NB, 0, 0, NPROW )
+.TP 21
+.ti +4
+NQ0
+= NUMROC( N, NB, 0, 0, NPCOL )
+.TP 21
+.ti +4
+LWMIN
+= MAX( NB*( NP0+1 ), 3*NB )
+.TP 21
+.ti +4
+IF(
+IBTYPE.EQ.1 .AND. .NOT.UPPER ) THEN
+.TP 21
+.ti +4
+LWOPT
+= 2*NP0*NB + NQ0*NB + NB*NB
+.TP 21
+.ti +4
+ELSE
+.TP 21
+.ti +4
+LWOPT
+= LWMIN
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+WORK(
+1 ) = DCMPLX( DBLE( LWOPT ) )
+.TP 21
+.ti +4
+LQUERY
+= ( LWORK.EQ.-1 )
+.TP 21
+.ti +4
+IF(
+IBTYPE.LT.1 .OR. IBTYPE.GT.3 ) THEN
+.TP 21
+.ti +4
+INFO
+= -1
+.TP 21
+.ti +4
+ELSE
+IF( .NOT.UPPER .AND. .NOT.LSAME( UPLO, 'L' ) ) THEN
+.TP 21
+.ti +4
+INFO
+= -2
+.TP 21
+.ti +4
+ELSE
+IF( N.LT.0 ) THEN
+.TP 21
+.ti +4
+INFO
+= -3
+.TP 21
+.ti +4
+ELSE
+IF( IROFFA.NE.0 ) THEN
+.TP 21
+.ti +4
+INFO
+= -5
+.TP 21
+.ti +4
+ELSE
+IF( ICOFFA.NE.0 ) THEN
+.TP 21
+.ti +4
+INFO
+= -6
+.TP 21
+.ti +4
+ELSE
+IF( DESCA( MB_ ).NE.DESCA( NB_ ) ) THEN
+.TP 21
+.ti +4
+INFO
+= -( 700+NB_ )
+.TP 21
+.ti +4
+ELSE
+IF( IROFFB.NE.0 .OR. IBROW.NE.IAROW ) THEN
+.TP 21
+.ti +4
+INFO
+= -9
+.TP 21
+.ti +4
+ELSE
+IF( ICOFFB.NE.0 .OR. IBCOL.NE.IACOL ) THEN
+.TP 21
+.ti +4
+INFO
+= -10
+.TP 21
+.ti +4
+ELSE
+IF( DESCB( MB_ ).NE.DESCA( MB_ ) ) THEN
+.TP 21
+.ti +4
+INFO
+= -( 1100+MB_ )
+.TP 21
+.ti +4
+ELSE
+IF( DESCB( NB_ ).NE.DESCA( NB_ ) ) THEN
+.TP 21
+.ti +4
+INFO
+= -( 1100+NB_ )
+.TP 21
+.ti +4
+ELSE
+IF( ICTXT.NE.DESCB( CTXT_ ) ) THEN
+.TP 21
+.ti +4
+INFO
+= -( 1100+CTXT_ )
+.TP 21
+.ti +4
+ELSE
+IF( LWORK.LT.LWMIN .AND. .NOT.LQUERY ) THEN
+.TP 21
+.ti +4
+INFO
+= -13
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+IDUM1(
+1 ) = IBTYPE
+.TP 21
+.ti +4
+IDUM2(
+1 ) = 1
+.TP 21
+.ti +4
+IF(
+UPPER ) THEN
+.TP 21
+.ti +4
+IDUM1(
+2 ) = ICHAR( 'U' )
+.TP 21
+.ti +4
+ELSE
+.TP 21
+.ti +4
+IDUM1(
+2 ) = ICHAR( 'L' )
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+IDUM2(
+2 ) = 2
+.TP 21
+.ti +4
+CALL
+PCHK2MAT( N, 3, N, 3, IA, JA, DESCA, 7, N, 3, N, 3, IB,
+JB, DESCB, 11, 2, IDUM1, IDUM2, INFO )
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+IF(
+INFO.NE.0 ) THEN
+.TP 21
+.ti +4
+CALL
+PXERBLA( ICTXT, 'PZHENGST', -INFO )
+.TP 21
+.ti +4
+RETURN
+.TP 21
+.ti +4
+ELSE
+IF( LQUERY ) THEN
+.TP 21
+.ti +4
+RETURN
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+IF(
+N.EQ.0 )
+RETURN
+.TP 21
+.ti +4
+IF(
+IBTYPE.NE.1 .OR. UPPER .OR. LWORK.LT.LWOPT ) THEN
+.TP 21
+.ti +4
+CALL
+PZHEGST( IBTYPE, UPLO, N, A, IA, JA, DESCA, B, IB, JB,
+DESCB, SCALE, INFO )
+.TP 21
+.ti +4
+RETURN
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+CALL
+DESCSET( DESCG, N, NB, NB, NB, IAROW, IACOL, ICTXT, NP0 )
+.TP 21
+.ti +4
+CALL
+DESCSET( DESCR, N, NB, NB, NB, IAROW, IACOL, ICTXT, NP0 )
+.TP 21
+.ti +4
+CALL
+DESCSET( DESCRT, NB, N, NB, NB, IAROW, IACOL, ICTXT, NB )
+.TP 21
+.ti +4
+CALL
+DESCSET( DESCAA, NB, NB, NB, NB, IAROW, IACOL, ICTXT, NB )
+.TP 21
+.ti +4
+INDG
+= 1
+.TP 21
+.ti +4
+INDR
+= INDG + DESCG( LLD_ )*NB
+.TP 21
+.ti +4
+INDAA
+= INDR + DESCR( LLD_ )*NB
+.TP 21
+.ti +4
+INDRT
+= INDAA + DESCAA( LLD_ )*NB
+.TP 21
+.ti +4
+DO
+30 K = 1, N, NB
+.TP 21
+.ti +4
+KB
+= MIN( N-K+1, NB )
+.TP 21
+.ti +4
+POSTK
+= K + KB
+.TP 21
+.ti +4
+NPK
+= N - POSTK + 1
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'A', N-POSTK+1, KB, B, POSTK+IB-1, K+JB-1, DESCB,
+WORK( INDG ), POSTK, 1, DESCG )
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'A', N-POSTK+1, KB, A, POSTK+IA-1, K+JA-1, DESCA,
+WORK( INDR ), POSTK, 1, DESCR )
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'A', KB, K-1, A, K+IA-1, JA, DESCA,
+WORK( INDRT ), 1, 1, DESCRT )
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'L', KB, KB, A, K+IA-1, K+JA-1, DESCA,
+WORK( INDR ), K, 1, DESCR )
+.TP 21
+.ti +4
+CALL
+PZTRSM( 'Right', 'L', 'N', 'N', NPK, KB, MONE, B, K+IB-1,
+K+JB-1, DESCB, WORK( INDG ), POSTK, 1, DESCG )
+.TP 21
+.ti +4
+CALL
+PZHEMM( 'Right', 'L', NPK, KB, ONEHALF, A, K+IA-1, K+JA-1,
+DESCA, WORK( INDG ), POSTK, 1, DESCG, ONE,
+WORK( INDR ), POSTK, 1, DESCR )
+.TP 21
+.ti +4
+CALL
+PZHER2K( 'Lower', 'No T', NPK, KB, ONE, WORK( INDG ),
+POSTK, 1, DESCG, WORK( INDR ), POSTK, 1, DESCR,
+RONE, A, POSTK+IA-1, POSTK+JA-1, DESCA )
+.TP 21
+.ti +4
+CALL
+PZGEMM( 'No T', 'No Conj', NPK, K-1, KB, ONE,
+WORK( INDG ), POSTK, 1, DESCG, WORK( INDRT ), 1,
+1, DESCRT, ONE, A, POSTK+IA-1, JA, DESCA )
+.TP 21
+.ti +4
+CALL
+PZHEMM( 'Right', 'L', NPK, KB, ONE, WORK( INDR ), K, 1,
+DESCR, WORK( INDG ), POSTK, 1, DESCG, ONE, A,
+POSTK+IA-1, K+JA-1, DESCA )
+.TP 21
+.ti +4
+CALL
+PZTRSM( 'Left', 'Lower', 'No Conj', 'Non-unit', KB, K-1,
+ONE, B, K+IB-1, K+JB-1, DESCB, A, K+IA-1, JA,
+DESCA )
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'L', KB, KB, A, K+IA-1, K+JA-1, DESCA,
+WORK( INDAA ), 1, 1, DESCAA )
+.TP 21
+.ti +4
+IF(
+MYROW.EQ.DESCAA( RSRC_ ) .AND. MYCOL.EQ.DESCAA( CSRC_ ) )
+THEN
+.TP 21
+.ti +4
+DO
+20 I = 1, KB
+.TP 21
+.ti +4
+DO
+10 J = 1, I
+.TP 21
+.ti +4
+WORK(
+INDAA+J-1+( I-1 )*DESCAA( LLD_ ) )
+= DCONJG( WORK( INDAA+I-1+( J-1 )*
+DESCAA( LLD_ ) ) )
+.TP 21
+.ti +4
+10
+CONTINUE
+.TP 21
+.ti +4
+20
+CONTINUE
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+CALL
+PZTRSM( 'Left', 'Lower', 'No Conj', 'Non-unit', KB, KB,
+ONE, B, K+IB-1, K+JB-1, DESCB, WORK( INDAA ), 1,
+1, DESCAA )
+.TP 21
+.ti +4
+CALL
+PZTRSM( 'Right', 'Lower', 'Conj', 'Non-unit', KB, KB, ONE,
+B, K+IB-1, K+JB-1, DESCB, WORK( INDAA ), 1, 1,
+DESCAA )
+.TP 21
+.ti +4
+CALL
+PZLACPY( 'L', KB, KB, WORK( INDAA ), 1, 1, DESCAA, A,
+K+IA-1, K+JA-1, DESCA )
+.TP 21
+.ti +4
+CALL
+PZTRSM( 'Right', 'Lower', 'Conj', 'Non-unit', NPK, KB,
+ONE, B, K+IB-1, K+JB-1, DESCB, A, POSTK+IA-1,
+K+JA-1, DESCA )
+.TP 21
+.ti +4
+DESCR(
+CSRC_ ) = MOD( DESCR( CSRC_ )+1, NPCOL )
+.TP 21
+.ti +4
+DESCG(
+CSRC_ ) = MOD( DESCG( CSRC_ )+1, NPCOL )
+.TP 21
+.ti +4
+DESCRT(
+RSRC_ ) = MOD( DESCRT( RSRC_ )+1, NPROW )
+.TP 21
+.ti +4
+DESCAA(
+RSRC_ ) = MOD( DESCAA( RSRC_ )+1, NPROW )
+.TP 21
+.ti +4
+DESCAA(
+CSRC_ ) = MOD( DESCAA( CSRC_ )+1, NPCOL )
+.TP 21
+.ti +4
+30
+CONTINUE
+.TP 21
+.ti +4
+WORK(
+1 ) = DCMPLX( DBLE( LWOPT ) )
+.TP 21
+.ti +4
+RETURN
+.TP 21
+.ti +4
+END
+.SH PURPOSE

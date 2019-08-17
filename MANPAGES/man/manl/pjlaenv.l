@@ -1,0 +1,655 @@
+.TH PJLAENV l "13 August 2001" "LAPACK test version 1.7" ")"
+.SH NAME
+
+.SH SYNOPSIS
+.TP 17
+INTEGER FUNCTION
+PJLAENV( ICTXT, ISPEC, NAME, OPTS, N1,
+N2, N3, N4 )
+.TP 17
+.ti +4
+CHARACTER*(
+* ) NAME, OPTS
+.TP 17
+.ti +4
+INTEGER
+ICTXT, ISPEC, N1, N2, N3, N4
+.TP 17
+.ti +4
+INTEGER
+BLOCK_CYCLIC_2D, CSRC_, CTXT_, DLEN_, DTYPE_,
+LLD_, MB_, M_, NB_, N_, RSRC_
+.TP 17
+.ti +4
+PARAMETER
+( BLOCK_CYCLIC_2D = 1, DLEN_ = 9, DTYPE_ = 1,
+CTXT_ = 2, M_ = 3, N_ = 4, MB_ = 5, NB_ = 6,
+RSRC_ = 7, CSRC_ = 8, LLD_ = 9 )
+.TP 17
+.ti +4
+LOGICAL
+CNAME, GLOBAL, SNAME
+.TP 17
+.ti +4
+CHARACTER
+C1
+.TP 17
+.ti +4
+CHARACTER*2
+C2, C4
+.TP 17
+.ti +4
+CHARACTER*3
+C3
+.TP 17
+.ti +4
+CHARACTER*8
+SUBNAM
+.TP 17
+.ti +4
+INTEGER
+I, IC, IDUMM, IZ, MSZ, NB
+.TP 17
+.ti +4
+INTRINSIC
+CHAR, ICHAR
+.TP 17
+.ti +4
+EXTERNAL
+IGAMX2D
+.TP 17
+.ti +4
+IF(
+BLOCK_CYCLIC_2D*CSRC_*CTXT_*DLEN_*DTYPE_*LLD_*MB_*M_*NB_*N_*
+RSRC_.LT.0 )RETURN
+.TP 17
+.ti +4
+GO
+TO ( 10, 10, 10, 10, 10 )ISPEC
+.TP 17
+.ti +4
+PJLAENV
+= -1
+.TP 17
+.ti +4
+RETURN
+.TP 17
+.ti +4
+10
+CONTINUE
+.TP 17
+.ti +4
+PJLAENV
+= 1
+.TP 17
+.ti +4
+SUBNAM
+= NAME
+.TP 17
+.ti +4
+IC
+= ICHAR( SUBNAM( 1: 1 ) )
+.TP 17
+.ti +4
+IZ
+= ICHAR( 'Z' )
+.TP 17
+.ti +4
+IF(
+IZ.EQ.100 .OR. IZ.EQ.122 ) THEN
+.TP 17
+.ti +4
+IF(
+IC.GE.97 .AND. IC.LE.122 ) THEN
+.TP 17
+.ti +4
+SUBNAM(
+1: 1 ) = CHAR( IC-32 )
+.TP 17
+.ti +4
+DO
+20 I = 2, 6
+.TP 17
+.ti +4
+IC
+= ICHAR( SUBNAM( I: I ) )
+.TP 17
+.ti +4
+IF(
+IC.GE.97 .AND. IC.LE.122 )
+SUBNAM( I: I ) = CHAR( IC-32 )
+.TP 17
+.ti +4
+20
+CONTINUE
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( IZ.EQ.233 .OR. IZ.EQ.169 ) THEN
+.TP 17
+.ti +4
+IF(
+( IC.GE.129 .AND. IC.LE.137 ) .OR.
+( IC.GE.145 .AND. IC.LE.153 ) .OR.
+( IC.GE.162 .AND. IC.LE.169 ) ) THEN
+.TP 17
+.ti +4
+SUBNAM(
+1: 1 ) = CHAR( IC+64 )
+.TP 17
+.ti +4
+DO
+30 I = 2, 6
+.TP 17
+.ti +4
+IC
+= ICHAR( SUBNAM( I: I ) )
+.TP 17
+.ti +4
+IF(
+( IC.GE.129 .AND. IC.LE.137 ) .OR.
+( IC.GE.145 .AND. IC.LE.153 ) .OR.
+( IC.GE.162 .AND. IC.LE.169 ) )SUBNAM( I:
+I ) = CHAR( IC+64 )
+.TP 17
+.ti +4
+30
+CONTINUE
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( IZ.EQ.218 .OR. IZ.EQ.250 ) THEN
+.TP 17
+.ti +4
+IF(
+IC.GE.225 .AND. IC.LE.250 ) THEN
+.TP 17
+.ti +4
+SUBNAM(
+1: 1 ) = CHAR( IC-32 )
+.TP 17
+.ti +4
+DO
+40 I = 2, 6
+.TP 17
+.ti +4
+IC
+= ICHAR( SUBNAM( I: I ) )
+.TP 17
+.ti +4
+IF(
+IC.GE.225 .AND. IC.LE.250 )
+SUBNAM( I: I ) = CHAR( IC-32 )
+.TP 17
+.ti +4
+40
+CONTINUE
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+C1
+= SUBNAM( 2: 2 )
+.TP 17
+.ti +4
+SNAME
+= C1.EQ.'S' .OR. C1.EQ.'D'
+.TP 17
+.ti +4
+CNAME
+= C1.EQ.'C' .OR. C1.EQ.'Z'
+.TP 17
+.ti +4
+IF(
+.NOT.( CNAME .OR. SNAME ) )
+RETURN
+.TP 17
+.ti +4
+C2
+= SUBNAM( 3: 4 )
+.TP 17
+.ti +4
+C3
+= SUBNAM( 5: 7 )
+.TP 17
+.ti +4
+C4
+= C3( 2: 3 )
+.TP 17
+.ti +4
+IF(
+( N2+N3+N4 )*0.NE.0 ) THEN
+.TP 17
+.ti +4
+C4
+= OPTS
+.TP 17
+.ti +4
+C3
+= C4
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+GO
+TO ( 50, 60, 70, 80, 90 )ISPEC
+.TP 17
+.ti +4
+50
+CONTINUE
+.TP 17
+.ti +4
+NB
+= 1
+.TP 17
+.ti +4
+IF(
+C2.EQ.'SY' .OR. C2.EQ.'HE' ) THEN
+.TP 17
+.ti +4
+IF(
+C3.EQ.'LLT' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 64
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 64
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( C3.EQ.'TTR' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 1
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 1
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( C3.EQ.'GST' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( C3.EQ.'BCK' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+ELSE
+IF( C3.EQ.'TRS' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 64
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 64
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+PJLAENV
+= NB
+.TP 17
+.ti +4
+GLOBAL
+= .TRUE.
+.TP 17
+.ti +4
+GO
+TO 100
+.TP 17
+.ti +4
+60
+CONTINUE
+.TP 17
+.ti +4
+NB
+= 16
+.TP 17
+.ti +4
+IF(
+C2.EQ.'SY' .OR. C2.EQ.'HE' ) THEN
+.TP 17
+.ti +4
+IF(
+C3.EQ.'TTR' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 32
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+PJLAENV
+= NB
+.TP 17
+.ti +4
+GLOBAL
+= .FALSE.
+.TP 17
+.ti +4
+GO
+TO 100
+.TP 17
+.ti +4
+70
+CONTINUE
+.TP 17
+.ti +4
+NB
+= 1
+.TP 17
+.ti +4
+IF(
+C2.EQ.'SY' .OR. C2.EQ.'HE' ) THEN
+.TP 17
+.ti +4
+IF(
+C3.EQ.'TTR' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+NB
+= 16
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+NB
+= 16
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+PJLAENV
+= NB
+.TP 17
+.ti +4
+GLOBAL
+= .TRUE.
+.TP 17
+.ti +4
+GO
+TO 100
+.TP 17
+.ti +4
+80
+CONTINUE
+.TP 17
+.ti +4
+PJLAENV
+= -4
+.TP 17
+.ti +4
+IF(
+C2.EQ.'SY' .OR. C2.EQ.'HE' ) THEN
+.TP 17
+.ti +4
+IF(
+C3.EQ.'TTR' ) THEN
+.TP 17
+.ti +4
+IF(
+N1.EQ.1 ) THEN
+.TP 17
+.ti +4
+PJLAENV
+= 1
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+IF(
+N1.EQ.2 ) THEN
+.TP 17
+.ti +4
+PJLAENV
+= 0
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+IF(
+N1.EQ.3 ) THEN
+.TP 17
+.ti +4
+PJLAENV
+= 0
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+GLOBAL
+= .TRUE.
+.TP 17
+.ti +4
+GO
+TO 100
+.TP 17
+.ti +4
+90
+CONTINUE
+.TP 17
+.ti +4
+MSZ
+= 0
+.TP 17
+.ti +4
+IF(
+C2.EQ.'SY' .OR. C2.EQ.'HE' ) THEN
+.TP 17
+.ti +4
+IF(
+C3.EQ.'TTR' ) THEN
+.TP 17
+.ti +4
+IF(
+SNAME ) THEN
+.TP 17
+.ti +4
+MSZ
+= 100
+.TP 17
+.ti +4
+ELSE
+.TP 17
+.ti +4
+MSZ
+= 100
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+PJLAENV
+= MSZ
+.TP 17
+.ti +4
+GLOBAL
+= .TRUE.
+.TP 17
+.ti +4
+GO
+TO 100
+.TP 17
+.ti +4
+100
+CONTINUE
+.TP 17
+.ti +4
+IF(
+GLOBAL ) THEN
+.TP 17
+.ti +4
+CALL
+IGAMX2D( ICTXT, 'All', ' ', 1, 1, PJLAENV, 1, IDUMM,
+IDUMM, -1, -1, IDUMM )
+.TP 17
+.ti +4
+END
+IF
+.TP 17
+.ti +4
+RETURN
+.TP 17
+.ti +4
+END
+.SH PURPOSE

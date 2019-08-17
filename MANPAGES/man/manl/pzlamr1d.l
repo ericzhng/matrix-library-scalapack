@@ -1,0 +1,134 @@
+.TH PZLAMR1D l "13 August 2001" "ScaLAPACK version 1.7" ")"
+.SH NAME
+
+.SH SYNOPSIS
+.TP 21
+SUBROUTINE PZLAMR1D(
+N, A, IA, JA, DESCA, B, IB, JB, DESCB )
+.TP 21
+.ti +4
+INTEGER
+IA, IB, JA, JB, N
+.TP 21
+.ti +4
+INTEGER
+DESCA( * ), DESCB( * )
+.TP 21
+.ti +4
+COMPLEX*16
+A( * ), B( * )
+.TP 21
+.ti +4
+INTEGER
+BLOCK_CYCLIC_2D, DLEN_, DTYPE_, CTXT_, M_, N_,
+MB_, NB_, RSRC_, CSRC_, LLD_
+.TP 21
+.ti +4
+PARAMETER
+( BLOCK_CYCLIC_2D = 1, DLEN_ = 9, DTYPE_ = 1,
+CTXT_ = 2, M_ = 3, N_ = 4, MB_ = 5, NB_ = 6,
+RSRC_ = 7, CSRC_ = 8, LLD_ = 9 )
+.TP 21
+.ti +4
+INTEGER
+I, ICTXT, MYCOL, MYROW, NPCOL, NPROW, NQ
+.TP 21
+.ti +4
+INTEGER
+DESCAA( DLEN_ ), DESCBB( DLEN_ )
+.TP 21
+.ti +4
+EXTERNAL
+BLACS_GRIDINFO, PZGEMR2D, ZGEBR2D, ZGEBS2D
+.TP 21
+.ti +4
+INTEGER
+NUMROC
+.TP 21
+.ti +4
+EXTERNAL
+NUMROC
+.TP 21
+.ti +4
+IF(
+BLOCK_CYCLIC_2D*CSRC_*CTXT_*DLEN_*DTYPE_*LLD_*MB_*M_*NB_*N_*
+RSRC_.LT.0 )RETURN
+.TP 21
+.ti +4
+IF(
+N.LE.0 )
+RETURN
+.TP 21
+.ti +4
+DO
+10 I = 1, DLEN_
+.TP 21
+.ti +4
+DESCAA(
+I ) = DESCA( I )
+.TP 21
+.ti +4
+DESCBB(
+I ) = DESCB( I )
+.TP 21
+.ti +4
+10
+CONTINUE
+.TP 21
+.ti +4
+DESCAA(
+M_ ) = 1
+.TP 21
+.ti +4
+DESCBB(
+M_ ) = 1
+.TP 21
+.ti +4
+DESCAA(
+LLD_ ) = 1
+.TP 21
+.ti +4
+DESCBB(
+LLD_ ) = 1
+.TP 21
+.ti +4
+ICTXT
+= DESCB( CTXT_ )
+.TP 21
+.ti +4
+CALL
+PZGEMR2D( 1, N, A, IA, JA, DESCAA, B, IB, JB, DESCBB, ICTXT )
+.TP 21
+.ti +4
+CALL
+BLACS_GRIDINFO( ICTXT, NPROW, NPCOL, MYROW, MYCOL )
+.TP 21
+.ti +4
+NQ
+= NUMROC( N, DESCB( NB_ ), MYCOL, 0, NPCOL )
+.TP 21
+.ti +4
+IF(
+MYROW.EQ.0 ) THEN
+.TP 21
+.ti +4
+CALL
+ZGEBS2D( ICTXT, 'C', ' ', NQ, 1, B, NQ )
+.TP 21
+.ti +4
+ELSE
+.TP 21
+.ti +4
+CALL
+ZGEBR2D( ICTXT, 'C', ' ', NQ, 1, B, NQ, 0, MYCOL )
+.TP 21
+.ti +4
+END
+IF
+.TP 21
+.ti +4
+RETURN
+.TP 21
+.ti +4
+END
+.SH PURPOSE
