@@ -115,8 +115,15 @@ cleanlib:
 cleanexample:
 	( cd EXAMPLE; $(MAKE) clean )
 
-install: $(SCALAPACKLIB_SHARED) $(SCALAPACKLIB)
-	mkdir -p $(PREFIX)/lib
-#	mkdir -p $(PREFIX)/include
-	cp libscalapack.so $(PREFIX)/lib/libscalapack.so
-	cp libscalapack.a $(PREFIX)/lib/libscalapack.a
+install:
+	mkdir -p $(PREFIX)/include
+	cp -r BLACS/SRC/*.h $(PREFIX)/include/
+	cp -r PBLAS/SRC/*.h $(PREFIX)/include/
+	cp -r REDIST/SRC/*.h $(PREFIX)/include/
+	
+	mkdir -p $(PREFIX)/lib64
+	cp libscalapack.so $(PREFIX)/lib64/libscalapack.so
+	cp libscalapack.a $(PREFIX)/lib64/libscalapack.a
+	
+	mkdir -p $(PREFIX)/share/man
+	cp -r MANPAGES/man/* $(PREFIX)/share/man/
