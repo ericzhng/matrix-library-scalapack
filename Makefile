@@ -14,7 +14,7 @@
 #
 ############################################################################
 
-PREFIX ?= /home/ericzhng/scalapack
+PREFIX ?= $(HOME)/matrix-library/scalapack/2.0.0
 
 include SLmake.inc
 
